@@ -20,17 +20,7 @@ Simulate an SMB credential brute-force attack against the Windows 11 victim and 
 
 ## Methodology
 
-### 1. Recon — confirm SMB dialect support
-
-```bash
-nmap -Pn -p 445 --script smb-protocols 192.168.203.140
-```
-
-Confirmed the target supports **SMB dialects 2.0.2 through 3.1.1** with SMBv1 disabled — standard for Windows 10/11 since ~2017. This determined the choice of attack tool below (legacy SMBv1-only tools will not work against this target).
-
-> 📸 **Screenshot placeholder:** `nmap smb-protocols` output showing the dialect list.
-
-### 2. Attack execution — netexec (SMB2/3-capable)
+### 1. Attack execution — netexec (SMB2/3-capable)
 
 ```bash
 netexec smb 192.168.203.140 -u admin -p /usr/share/wordlists/rockyou.txt --ignore-pw-decoding
@@ -74,13 +64,3 @@ The attack was fully visible in the Wazuh Threat Hunting view for the `windows11
 | SMBv1 | Disabled (good) | No action — confirm it stays disabled; do not re-enable for compatibility without strong justification |
 | Credential strength | Default/weak lab credentials used | Enforce strong password policy and consider MFA for any exposed authentication service |
 | Monitoring | Working correctly | Continue tuning Wazuh's brute-force correlation rule threshold/window to balance detection speed vs. false positives |
-
-## Next Steps
-
-- Inspect the specific Wazuh rule ID/threshold behind "Multiple Windows Logon Failures" to understand exact sensitivity.
-- Apply the account lockout policy fix and re-run the attack to confirm the lockout now interrupts the brute-force attempt.
-- Extend the exercise with Suricata to check whether the SMB traffic pattern itself (not just Windows event logs) triggers a network-layer alert.
-
-## Disclaimer
-
-This exercise was performed entirely within an isolated home lab against VMs owned and controlled by the author. No attack techniques described here should be used against systems without explicit authorization.
